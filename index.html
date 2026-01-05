@@ -3,11 +3,106 @@
 <head>
   <meta charset="utf-8">
   <title>knify.xyz</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0b0e14;
+      overflow: hidden;
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 40px;
+    }
+
+    img {
+      width: 500px;
+    }
+
+    #pollen {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+  </style>
 </head>
 <body>
 
-  <img src="dh0.jpeg" alt="knify logo" width="500">
-  <img src="dh1.jpeg" alt="knify logo" width="500">
+
+  <canvas id="pollen"></canvas>
+
+  <div class="container">
+    <img src="dh0.png" height="500" width="500">
+    <img src="dh1.png" height="500" width="500">
+  </div>
+  <script>
+    const canvas = document.getElementById("pollen");
+    const ctx = canvas.getContext("2d");
+
+    function resize() {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = innerWidth * dpr;
+      canvas.height = innerHeight * dpr;
+      canvas.style.width = innerWidth + "px";
+      canvas.style.height = innerHeight + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    const COUNT = 120;
+    const pollen = [];
+    const colors = [
+      "rgba(255, 230, 140, 0.45)",
+      "rgba(255, 245, 180, 0.3)",
+      "rgba(255, 255, 200, 0.25)"
+    ];
+
+    function rand(a, b) { return Math.random() * (b - a) + a; }
+
+    function make() {
+      return {
+        x: rand(0, innerWidth),
+        y: rand(0, innerHeight),
+        r: rand(0.6, 2),
+        vx: rand(-0.2, 0.2),
+        vy: rand(0.2, 0.7),
+        w: rand(0, Math.PI * 2),
+        ws: rand(0.005, 0.02),
+        a: rand(0.15, 0.5),
+        c: colors[Math.floor(Math.random() * colors.length)]
+      };
+    }
+
+    for (let i = 0; i < COUNT; i++) pollen.push(make());
+
+    function draw() {
+      ctx.clearRect(0,0,innerWidth,innerHeight);
+      for (const p of pollen) {
+        p.w += p.ws;
+        p.x += p.vx + Math.sin(p.w) * 0.3;
+        p.y += p.vy;
+
+        if (p.y > innerHeight) {
+          p.x = rand(0, innerWidth);
+          p.y = -5;
+        }
+
+        ctx.beginPath();
+        ctx.fillStyle = p.c.replace(/0\.\d+\)$/, `${p.a})`);
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      requestAnimationFrame(draw);
+    }
+    draw();
+  </script>
 
 </body>
 </html>
